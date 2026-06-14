@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('POSTGRES_DB', 'gdpr') }}"
+    schema: public
+    tables:
+      - name: customer_data
+      - name: orders
+
+models:
+  - name: stg_customer_data
+    description: "Staging model for raw customer records with PII fields controlled upstream by masking layer."
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+      - name: email
+        tests:
+          - not_null
+
+  - name: int_customer_orders
+    description: "Intermediate model joining customer and order domains for governed analytics."
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('stg_customer_data')
+              field: customer_id
+
+  - name: fct_gdpr_orders
+    description: "Mart model for GDPR-safe order analytics."
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - unique

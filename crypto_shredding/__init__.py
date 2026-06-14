@@ -1,0 +1,1 @@
+"""Crypto-shredding package."""
