@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: gdpr
+      POSTGRES_USER: gdpr_user
+      POSTGRES_PASSWORD: gdpr_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+
+  app:
+    build: .
+    env_file:
+      - .env.example
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/opt/pipeline
+
+volumes:
+  postgres_data:

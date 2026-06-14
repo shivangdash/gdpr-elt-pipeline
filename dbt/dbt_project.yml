@@ -1,0 +1,17 @@
+name: gdpr_elt_pipeline
+version: 1.0.0
+config-version: 2
+
+profile: gdpr_elt_pipeline
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+
+models:
+  gdpr_elt_pipeline:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
+      +materialized: table
