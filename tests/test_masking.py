@@ -1,12 +1,15 @@
+import os
 import unittest
+from unittest.mock import patch
 
-from pii_masking.masker import TokenVault, hash_value, mask_record
+from pii_masking.masker import MissingSaltError, TokenVault, hash_value, mask_record
 
 
 class TestPIIMasking(unittest.TestCase):
     def test_production_uses_hashing(self) -> None:
         record = {"name": "Alice", "email": "alice@example.com", "order_id": "1"}
-        masked = mask_record(record, environment="production")
+        with patch.dict(os.environ, {"PII_HASH_SALT": "test-salt"}, clear=False):
+            masked = mask_record(record, environment="production")
 
         self.assertTrue(masked["name"].startswith("sha256:"))
         self.assertTrue(masked["email"].startswith("sha256:"))
@@ -24,6 +27,11 @@ class TestPIIMasking(unittest.TestCase):
         first = hash_value("alice@example.com", salt="fixed")
         second = hash_value("alice@example.com", salt="fixed")
         self.assertEqual(first, second)
+
+    def test_missing_salt_raises_error(self) -> None:
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(MissingSaltError):
+                hash_value("alice@example.com")
 
 
 if __name__ == "__main__":

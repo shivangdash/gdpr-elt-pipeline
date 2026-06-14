@@ -12,10 +12,18 @@ from datetime import datetime, timezone
 PII_FIELDS = {"name", "email", "phone", "ssn", "address"}
 
 
+class MissingSaltError(ValueError):
+    """Raised when a hashing salt is not configured."""
+
+
 def hash_value(value: str, salt: str | None = None) -> str:
     if value is None:
         return ""
-    resolved_salt = salt if salt is not None else os.getenv("PII_HASH_SALT", "default-salt")
+
+    resolved_salt = salt if salt is not None else os.getenv("PII_HASH_SALT")
+    if not resolved_salt:
+        raise MissingSaltError("PII_HASH_SALT must be configured for hashing")
+
     digest = hashlib.sha256(f"{resolved_salt}:{value}".encode("utf-8")).hexdigest()
     return f"sha256:{digest}"
 

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import csv
 import logging
+import os
 from pathlib import Path
 from random import randint
 
 LOGGER = logging.getLogger(__name__)
-DATA_DIR = Path("/tmp/gdpr_pipeline_data")
+DATA_DIR = Path(os.getenv("PIPELINE_DATA_DIR", "/tmp/gdpr_pipeline_data"))
 
 
 def _ensure_data_dir() -> None:
